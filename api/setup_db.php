@@ -16,6 +16,8 @@ if ($host === 'localhost' || empty($host)) {
 }
 
 try {
+    require_once __DIR__ . '/TiDB_PDO.php';
+
     $ca_path = '';
     $ca_paths = [
         __DIR__ . '/ca-bundle.crt',
@@ -47,8 +49,8 @@ try {
         $port = $parts[1];
     }
 
-    // Connect without specifying a database first
-    $pdo = new PDO("mysql:host=$host;port=$port;charset=utf8mb4", $dbuser, $dbpass, $options);
+    // Connect without specifying a database first using our Polyfill
+    $pdo = new TiDB_PDO("mysql:host=$host;port=$port;charset=utf8mb4", $dbuser, $dbpass, $options);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     // Create database

@@ -15,6 +15,8 @@ if ($host === 'localhost' || empty($host)) {
 }
 
 try {
+    require_once __DIR__ . '/TiDB_PDO.php';
+
     $ca_path = '';
     $ca_paths = [
         __DIR__ . '/ca-bundle.crt',
@@ -29,14 +31,12 @@ try {
         }
     }
 
-    // TiDB Cloud requires SSL connection with SNI support.
-    // In PHP PDO, SNI should be sent if a valid CA is loaded, but verification can cause issues on Vercel.
     $options = [
         1002 => 'SET NAMES utf8mb4', // MYSQL_ATTR_INIT_COMMAND
         1014 => false,               // MYSQL_ATTR_SSL_VERIFY_SERVER_CERT (Disable verification)
     ];
     if ($ca_path) {
-        $options[1009] = $ca_path;   // MYSQL_ATTR_SSL_CA (1009 = File, 1010 = Directory)
+        $options[1009] = $ca_path;   // MYSQL_ATTR_SSL_CA
     }
     // Extract port if provided, otherwise default to 4000 for TiDB Cloud Serverless
     $port = 4000;
@@ -46,10 +46,11 @@ try {
         $port = $parts[1];
     }
     
-    $pdo = new PDO("mysql:host=$host;port=$port;dbname=$dbname;charset=utf8mb4", $dbuser, $dbpass, $options);
+    // 🔥 Magic happens here: Instantiate our Polyfill instead of native PDO 🔥
+    $pdo = new TiDB_PDO("mysql:host=$host;port=$port;dbname=$dbname;charset=utf8mb4", $dbuser, $dbpass, $options);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
+} catch (Exception $e) {
     header('Content-Type: application/json');
     http_response_code(500);
     echo json_encode(['ok' => false, 'message' => 'DB connection failed: ' . $e->getMessage()]);
