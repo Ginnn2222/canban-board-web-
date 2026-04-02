@@ -1,0 +1,9 @@
+# Laragon & Local files
+/uploads/*
+!/uploads/.gitkeep
+/vendor
+.DS_Store
+Thumbs.db
+
+# Vercel
+.vercel

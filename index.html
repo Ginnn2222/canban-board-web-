@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tralala Board</title>
+    <link rel="icon" type="image/png" href="assets/images/logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- ── Auth Overlay ── -->
+    <div id="auth-overlay" class="auth-overlay hidden">
+        <div class="auth-card">
+            <button id="auth-close-btn" class="auth-close-btn" aria-label="Close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="auth-brand">
+                <div class="brand-clickable" id="brand-how-it-works" title="Cara Kerja Website">
+                    <img src="assets/images/logo.png" class="auth-brand-logo" alt="Tralala Board Logo">
+                    <div class="auth-brand-name">Tralala <span>Board</span></div>
+                </div>
+                <p class="auth-brand-tagline">Kelola tugas tim Anda<br>dengan mudah dan cepat</p>
+                <div class="auth-brand-cta">
+                    <p id="brand-cta-text">Belum punya akun?</p>
+                    <button id="auth-switch-btn" class="auth-switch-btn">Daftar</button>
+                </div>
+            </div>
+            <div class="auth-form-panel">
+                <!-- Login mode -->
+                <div class="auth-mode active" id="mode-login">
+                    <div class="auth-form-header">
+                        <h2>Selamat Datang</h2>
+                        <p>Masuk ke akun Anda untuk melanjutkan</p>
+                    </div>
+                    <div class="auth-fields">
+                        <div class="auth-field">
+                            <i class="fi fa-solid fa-envelope"></i>
+                            <input type="email" id="login-email" placeholder="Email" autocomplete="off">
+                        </div>
+                        <div class="auth-field">
+                            <i class="fi fa-solid fa-lock"></i>
+                            <input type="password" id="login-password" placeholder="Password">
+                            <i class="fa-solid fa-eye auth-eye" data-target="login-password"></i>
+                        </div>
+                    </div>
+                    <p id="login-error" class="auth-error-msg hidden"></p>
+                    <button id="login-submit" class="auth-submit-btn">Masuk</button>
+                </div>
+                <!-- Register mode -->
+                <div class="auth-mode" id="mode-register">
+                    <div class="auth-form-header">
+                        <h2>Buat Akun Baru</h2>
+                        <p>Daftar gratis dan mulai kelola board Anda</p>
+                    </div>
+                    <div class="auth-fields">
+                        <div class="auth-field">
+                            <i class="fi fa-solid fa-user"></i>
+                            <input type="text" id="reg-username" placeholder="Username" autocomplete="off">
+                        </div>
+                        <div class="auth-field">
+                            <i class="fi fa-solid fa-envelope"></i>
+                            <input type="email" id="reg-email" placeholder="Email" autocomplete="off">
+                        </div>
+                        <div class="auth-field">
+                            <i class="fi fa-solid fa-lock"></i>
+                            <input type="password" id="reg-password" placeholder="Password">
+                            <i class="fa-solid fa-eye auth-eye" data-target="reg-password"></i>
+                        </div>
+                        <div class="auth-field">
+                            <i class="fi fa-solid fa-lock"></i>
+                            <input type="password" id="reg-confirm" placeholder="Ulangi Password">
+                            <i class="fa-solid fa-eye auth-eye" data-target="reg-confirm"></i>
+                        </div>
+                    </div>
+                    <p id="register-error" class="auth-error-msg hidden"></p>
+                    <button id="register-submit" class="auth-submit-btn">Daftar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Profile Modal ── -->
+    <div id="profile-modal" class="profile-modal-overlay hidden">
+        <div class="profile-modal">
+            <!-- Header -->
+            <div class="profile-modal-header">
+                <h2><i class="fa-solid fa-user-pen"></i> Kelola Profil</h2>
+                <button id="profile-modal-close" class="modal-close-btn" aria-label="Close">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="profile-modal-body">
+
+                <!-- Photo section -->
+                <div class="profile-photo-section">
+                    <div class="profile-avatar-large" id="profile-avatar-preview">
+                        <span id="profile-avatar-initials">U</span>
+                        <img id="profile-avatar-img" src="" alt="" draggable="false" style="display:none">
+                        <div class="avatar-drag-hint hidden" id="avatar-drag-hint">
+                            <i class="fa-solid fa-up-down-left-right"></i>
+                        </div>
+                    </div>
+                    <div class="profile-photo-actions">
+                        <label for="profile-photo-input" class="photo-upload-btn">
+                            <i class="fa-solid fa-camera"></i> Ubah Foto
+                        </label>
+                        <input type="file" id="profile-photo-input" accept="image/*" style="display:none">
+                        <button id="profile-photo-remove" class="photo-remove-btn hidden">
+                            <i class="fa-solid fa-trash-can"></i> Hapus
+                        </button>
+                        <p class="photo-drag-tip hidden" id="photo-drag-tip">Seret foto untuk mengatur posisi</p>
+                    </div>
+                </div>
+
+                <hr class="profile-divider">
+
+                <!-- Change name -->
+                <div class="profile-section">
+                    <h3 class="profile-section-title"><i class="fa-solid fa-user"></i> Nama Pengguna</h3>
+                    <input type="text" id="profile-username" class="profile-input" placeholder="Username baru">
+                    <p id="profile-name-msg" class="profile-msg hidden"></p>
+                </div>
+
+                <hr class="profile-divider">
+
+                <!-- Change password -->
+                <div class="profile-section">
+                    <h3 class="profile-section-title"><i class="fa-solid fa-lock"></i> Ubah Password <span class="pw-optional">(opsional)</span></h3>
+                    <div class="profile-fields">
+                        <div class="profile-pw-field">
+                            <input type="password" id="profile-old-pw" class="profile-input" placeholder="Password lama (isi jika ingin ganti)">
+                            <i class="fa-solid fa-eye profile-eye" data-target="profile-old-pw"></i>
+                        </div>
+                        <div class="profile-pw-field">
+                            <input type="password" id="profile-new-pw" class="profile-input" placeholder="Password baru">
+                            <i class="fa-solid fa-eye profile-eye" data-target="profile-new-pw"></i>
+                        </div>
+                        <div class="profile-pw-field">
+                            <input type="password" id="profile-confirm-pw" class="profile-input" placeholder="Ulangi password baru">
+                            <i class="fa-solid fa-eye profile-eye" data-target="profile-confirm-pw"></i>
+                        </div>
+                    </div>
+                    <p id="profile-pw-msg" class="profile-msg hidden"></p>
+                </div>
+
+                <!-- Single save button -->
+                <p id="profile-global-msg" class="profile-msg hidden"></p>
+                <button id="profile-save-all" class="profile-save-all-btn">
+                    <i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan
+                </button>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ── How It Works Modal ── -->
+    <div id="how-it-works-modal" class="how-it-works-overlay hidden">
+        <div class="how-it-works-card">
+            <div class="hiw-header">
+                <h2><i class="fa-solid fa-lightbulb"></i> Cara Kerja</h2>
+                <button id="hiw-close" class="modal-close-btn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="hiw-body">
+                <div class="hiw-step">
+                    <div class="hiw-step-icon"><i class="fa-solid fa-plus"></i></div>
+                    <div class="hiw-step-content">
+                        <h3>Buat List</h3>
+                        <p>Klik tombol <strong>"Create"</strong> di navbar untuk membuat kolom pekerjaan baru.</p>
+                    </div>
+                </div>
+                <div class="hiw-step">
+                    <div class="hiw-step-icon"><i class="fa-solid fa-square-plus"></i></div>
+                    <div class="hiw-step-content">
+                        <h3>Tambah Card</h3>
+                        <p>Klik <strong>"+ Add a card"</strong> dalam list untuk menulis tugas baru.</p>
+                    </div>
+                </div>
+                <div class="hiw-step">
+                    <div class="hiw-step-icon"><i class="fa-solid fa-up-down-left-right"></i></div>
+                    <div class="hiw-step-content">
+                        <h3>Geser & Urutkan</h3>
+                        <p>Gunakan <strong>Drag and Drop</strong> untuk memindahkan tugas antar list.</p>
+                    </div>
+                </div>
+                <div class="hiw-step">
+                    <div class="hiw-step-icon"><i class="fa-solid fa-user-gear"></i></div>
+                    <div class="hiw-step-content">
+                        <h3>Kelola Profil</h3>
+                        <p>Klik avatar Anda untuk mengganti nama, password, atau <strong>upload foto profil</strong>.</p>
+                    </div>
+                </div>
+                <div class="hiw-tip">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span><strong>Pro Tip:</strong> Klik pada kartu tugas untuk menambahkan deskripsi detail!</span>
+                </div>
+            </div>
+            <div class="hiw-footer">
+                <button id="hiw-got-it" class="hiw-btn">Mengerti!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── App Header ── -->
+    <header class="app-header">
+        <div class="header-left">
+            <div class="nav-menu-wrapper">
+                <button id="sidebar-toggle" class="sidebar-toggle" title="Navigation">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div id="nav-dropdown" class="nav-dropdown hidden">
+                    <button id="nav-go-home" class="nav-dropdown-item">
+                        <i class="fa-solid fa-house"></i> Home
+                    </button>
+                    <button id="nav-go-board" class="nav-dropdown-item">
+                        <i class="fa-solid fa-table-columns"></i> Board
+                    </button>
+                </div>
+            </div>
+            <div class="logo" id="nav-how-it-works" title="Cara Kerja Website">
+                <img src="assets/images/shark_logo.png" class="nav-logo-img" alt="Logo" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid #C08552;">
+                <h1>Tralala <span>Board</span></h1>
+            </div>
+        </div>
+        <div class="header-center">
+            <div class="search-wrapper">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="search-input" class="search-input" placeholder="Search cards..." autocomplete="off">
+                <span id="search-clear" class="search-clear hidden"><i class="fa-solid fa-xmark"></i></span>
+                
+                <!-- Search Dropdown -->
+                <div id="search-dropdown" class="search-dropdown hidden">
+                    <div class="search-section-title">CARDS</div>
+                    <div id="search-results-list" class="search-results-list"></div>
+                </div>
+            </div>
+            <button id="add-list-btn" class="create-btn">
+                <i class="fa-solid fa-plus"></i> Create
+            </button>
+        </div>
+        <div class="header-right">
+            <!-- Shown when logged in -->
+            <div class="user-profile hidden" id="user-profile-btn">
+                <div class="avatar" id="user-avatar">
+                    <img id="user-nav-photo" class="hidden" alt="Profile">
+                    <span id="user-nav-initials">U</span>
+                </div>
+                <span id="user-nav-name" class="user-nav-name">User</span>
+                <div class="user-dropdown hidden" id="user-dropdown">
+                    <div class="user-info">
+                        <p class="user-name" id="user-display-name">User</p>
+                        <p class="user-email" id="user-display-email">user@email.com</p>
+                    </div>
+                    <button id="open-profile-modal" class="dropdown-item">
+                        <i class="fa-solid fa-user-pen"></i> Manage Profile
+                    </button>
+                    <button id="logout-btn" class="dropdown-item danger-item">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    </button>
+                </div>
+            </div>
+            <!-- Shown when logged out -->
+            <button id="open-login-btn" class="auth-nav-btn">
+                <i class="fa-solid fa-user"></i> Login
+            </button>
+        </div>
+    </header>
+
+
+
+    <main class="board-container hidden"></main>
+
+    <!-- ── Landing Page (Home) ── -->
+    <section id="landing-page" class="landing-page-container">
+        <div class="landing-hero">
+            <!-- Full-bleed background image handled in CSS -->
+            <div class="hero-overlay"></div>
+            <!-- Text content (left side, on top of overlay) -->
+            <div class="hero-content">
+                <h1 class="hero-title">ORGANIZE YOUR PROJECTS <br><span>WITH EASE</span></h1>
+                <p class="hero-desc">The ultimate workspace for teams who love clarity and premium aesthetics. Manage tasks, collaborate in real-time, and ship faster with Tralala Board.</p>
+                
+                <div class="hero-actions">
+                    <button id="hero-start-btn" class="btn-hero-primary">
+                        Start Organizing <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                    <button id="hero-how-btn" class="btn-hero-outline">
+                        How it Works
+                    </button>
+                </div>
+            </div>
+
+            <!-- Scroll indicator inside hero -->
+            <div class="landing-footer" id="scroll-to-hiw" style="cursor: pointer;">
+                <div class="scroll-indicator">
+                    <i class="fa-solid fa-chevron-down"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- NEW How It Works Section -->
+        <div id="how-it-works-section" class="hiw-section">
+            <div class="hiw-section-header">
+                <h2>Kelola Proyek Lebih Cepat & Rapi</h2>
+                <p>Fitur-fitur andalan Tralala Board untuk mendongkrak produktivitas tim Anda.</p>
+            </div>
+            
+            <div class="hiw-grid">
+                <div class="hiw-feature-card">
+                    <div class="hiw-image-wrapper">
+                        <img src="assets/images/shark_board.png" alt="Board & List">
+                    </div>
+                    <h3>Buat Board & List</h3>
+                    <p>Mulai dari awal dengan menekan tombol <strong>Create</strong>. Sisipkan kolom tugas dengan satu klik saja dan mulai tata proyek Anda.</p>
+                </div>
+                
+                <div class="hiw-feature-card">
+                    <div class="hiw-image-wrapper">
+                        <img src="assets/images/shark_drag.png" alt="Drag and Drop">
+                    </div>
+                    <h3>Mekanisme Drag & Drop</h3>
+                    <p>Geser Card tugas Anda dari "To do" ke "Done" sehalus sutra. Bebas pindahkan prioritas dengan instan tanpa loading ulng.</p>
+                </div>
+                
+                <div class="hiw-feature-card">
+                    <div class="hiw-image-wrapper">
+                        <img src="assets/images/shark_attach.png" alt="Attachments">
+                    </div>
+                    <h3>Lampirkan File & Gambar</h3>
+                    <p>Jangan biarkan referensi tertukar! Anda bebas menyisipkan file pendukung, dokumen, hingga gambar tangkapan layar langsung ke dalam Card.</p>
+                </div>
+
+                <div class="hiw-feature-card">
+                    <div class="hiw-image-wrapper">
+                        <img src="assets/images/shark_badge.png" alt="Custom Labels">
+                    </div>
+                    <h3>Kustomisasi Label Warna</h3>
+                    <p>Berikan warna spesifik untuk menandakan urgensi atau jenis tugas. Bantu mata tim Anda mendeteksi mana yang kritis dalam hitungan detik.</p>
+                </div>
+
+                <div class="hiw-feature-card">
+                    <div class="hiw-image-wrapper">
+                        <img src="assets/images/shark_collab.png" alt="Team Collaboration">
+                    </div>
+                    <h3>Kolaborasi Real-time</h3>
+                    <p>Kelola semua tugas bersama tim Anda. Perubahan yang Anda buat langsung terlihat secara langsung tanpa harus repot refresh halaman.</p>
+                </div>
+
+                <div class="hiw-feature-card">
+                    <div class="hiw-image-wrapper">
+                        <img src="assets/images/shark_secure.png" alt="Data Security">
+                    </div>
+                    <h3>Privasi & Keamanan</h3>
+                    <p>Sistem registrasi yang diproteksi menjaga data proyek dan struktur Kanban perusahaan Anda dari akses yang tidak berkepentingan.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Scroll wipe overlay — pointer-events:none so NEVER blocks clicks -->
+    <div id="scroll-wipe" class="scroll-wipe"></div>
+
+
+    <!-- Templates -->
+    <template id="list-template">
+        <div class="list" data-id="">
+            <div class="list-header">
+                <h2 class="list-title" spellcheck="false" title="List Name">List Title</h2>
+                <div class="list-header-actions" style="display:flex; align-items:center; gap:0.3rem;">
+                    <i class="fa-solid fa-arrows-left-right" style="font-size:0.75rem; opacity:0.6; cursor:pointer;" title="Toggle Width"></i>
+                    <div style="position:relative;">
+                        <button class="list-kebab-toggle-btn" aria-label="List Actions" style="background:none; border:none; color:inherit; padding:0.4rem; cursor:pointer; font-size:1rem; border-radius:4px; transition:all 0.1s;"><i class="fa-solid fa-ellipsis"></i></button>
+                        <!-- Kebab Dropdown -->
+                        <div class="list-kebab-dropdown hidden" style="position: absolute; top: 100%; right: 0; background: #FFF8F0; border: 1px solid rgba(192, 133, 82, 0.4); border-radius: 4px; box-shadow: var(--shadow-md); z-index: 10; min-width: 150px; padding: 0.5rem 0; text-align: left; margin-top: 0.3rem;">
+                            <div class="list-dropdown-item rename-list-action"><i class="fa-solid fa-pen-to-square" style="margin-right: 0.5rem;"></i> Rename List</div>
+                            <hr style="border:none; border-top:1px solid rgba(192,133,82,0.2); margin:0.3rem 0;">
+                            <div class="list-dropdown-item delete-list-action" style="color: #c0392b;"><i class="fa-solid fa-trash-can" style="margin-right: 0.5rem;"></i> Delete List</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="cards-container"></div>
+            <div class="list-footer" style="display:flex; justify-content:space-between; align-items:center; padding-right:0.6rem;">
+                <button class="add-card-btn" style="flex:1;">
+                    <i class="fa-solid fa-plus"></i> Add a card
+                </button>
+                <i class="fa-solid fa-rectangle-list list-summary-btn" style="font-size:0.85rem; color:rgba(255,255,255,0.6); cursor:pointer;" title="Summary Task (Semua Isi Card)"></i>
+            </div>
+        </div>
+    </template>
+
+    <template id="card-template">
+        <div class="card" data-id="" draggable="true">
+            <div class="card-content">
+                <div class="card-labels"></div>
+                <p class="card-text"></p>
+                <div class="card-badges"></div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Card Detail Modal -->
+    <div id="card-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-topbar">
+                <div class="modal-topbar-left">
+                    <i class="fa-solid fa-layer-group"></i>
+                    <div id="modal-list-name" class="modal-list-name-btn" title="Click to move card">
+                        <span id="modal-list-name-text">List Name</span>
+                        <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem; margin-left: 0.3rem; opacity: 0.8;"></i>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <div style="position:relative;">
+                        <button id="modal-kebab-btn" class="modal-close-btn" aria-label="Menu" title="Card actions">
+                            <i class="fa-solid fa-ellipsis-vertical"></i>
+                        </button>
+                        <!-- Kebab Dropdown -->
+                        <div id="modal-kebab-dropdown" class="hidden" style="position: absolute; top: 100%; right: 0; background: #FFF8F0; border: 1px solid rgba(192, 133, 82, 0.4); border-radius: 4px; box-shadow: var(--shadow-md); z-index: 10; min-width: 150px; padding: 0.5rem 0; text-align: left; margin-top: 0.3rem;">
+                            <div id="kebab-rename-card-btn" class="list-dropdown-item">
+                                <i class="fa-solid fa-pen" style="margin-right: 0.5rem;"></i> Rename Card
+                            </div>
+                            <div id="kebab-rename-list-btn" class="list-dropdown-item">
+                                <i class="fa-solid fa-pen-to-square" style="margin-right: 0.5rem;"></i> Rename List
+                            </div>
+                            <hr style="border:none; border-top:1px solid rgba(192,133,82,0.2); margin:0.3rem 0;">
+                            <div id="kebab-delete-btn" class="list-dropdown-item" style="color: #c0392b;">
+                                <i class="fa-solid fa-trash-can" style="margin-right: 0.5rem;"></i> Delete Card
+                            </div>
+                        </div>
+                    </div>
+                    <button id="modal-close-btn" class="modal-close-btn" aria-label="Close">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                </div>
+            </div>
+            <div class="modal-inner">
+                <div class="modal-main">
+                    <h2 id="modal-card-title" class="modal-title" spellcheck="false">Card Title</h2>
+                    <p class="modal-list-info">in list <span id="modal-list-name-detail">List Name</span></p>
+                    
+                    <!-- Labels section -->
+                    <div class="modal-section-label" style="margin-bottom:0.5rem;">
+                        <i class="fa-solid fa-tag"></i> Labels
+                    </div>
+                    <div id="modal-labels-display" class="modal-labels-display"></div>
+                    <button id="modal-add-label-btn" class="modal-add-label-btn">
+                        <i class="fa-solid fa-plus"></i> Add Label
+                    </button>
+
+                    <!-- Label Editor Popup -->
+                    <div id="label-editor" class="label-editor hidden">
+                        <div class="label-editor-header">
+                            <span>Edit Label</span>
+                            <button id="label-editor-close" class="label-editor-close-btn"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        <input type="text" id="label-name-input" class="label-name-input" placeholder="Label name (optional)">
+                        <div class="label-color-palette" id="label-color-palette"></div>
+                        <div class="label-editor-custom">
+                            <label style="font-size:0.75rem; color:#8C5A3C; font-weight:600;">Warna kustom:</label>
+                            <input type="color" id="label-custom-color" value="#4A90E2" class="label-custom-color-input">
+                        </div>
+                        <div class="label-editor-actions">
+                            <button id="label-save-btn" class="btn-primary">Simpan</button>
+                            <button id="label-delete-btn" class="btn-secondary" style="color:#c0392b; border-color:#f5c6c6;">Hapus</button>
+                        </div>
+                    </div>
+
+                    <div class="modal-section-label" style="margin-top:1.5rem;">
+                        <i class="fa-solid fa-align-left"></i>
+                        Description
+                    </div>
+                    <textarea id="modal-description-input" class="modal-description"
+                        placeholder="Add a detailed description..."></textarea>
+                    <div class="description-actions">
+                        <button id="modal-save-desc-btn" class="btn-primary">Save</button>
+                        <button id="modal-cancel-desc-btn" class="btn-secondary">Cancel</button>
+                    </div>
+
+                    <!-- ── Attachments Section ── -->
+                    <div id="modal-attachments-section" class="hidden" style="margin-top: 2rem; border-top: 1px solid rgba(192,133,82,0.1); padding-top: 1.5rem;">
+                        <div class="modal-section-label">
+                            <i class="fa-solid fa-paperclip"></i>
+                            Files
+                        </div>
+                        <div id="modal-attachments-list" class="attachments-list">
+                            <!-- Attachments will be injected here -->
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-sidebar">
+
+
+                    <!-- ── Comments & Activity ── -->
+                    <div class="modal-section-label" style="margin-top: 0.5rem;">
+                        <i class="fa-solid fa-list-ul"></i>
+                        Comments and activity
+                    </div>
+                    
+                    <div class="comment-composer">
+                        <div class="comment-author-avatar" id="comment-author-avatar">U</div>
+                        <div class="comment-input-wrapper">
+                            <div class="comment-toolbar">
+                                <button id="btn-format-title" class="toolbar-btn" title="Formatting"><i class="fa-solid fa-text-height"></i></button>
+                                <div class="toolbar-divider"></div>
+                                <button id="btn-format-bold" class="toolbar-btn" title="Bold"><i class="fa-solid fa-bold"></i></button>
+                                <button id="btn-format-italic" class="toolbar-btn" title="Italic"><i class="fa-solid fa-italic"></i></button>
+                                <div style="position: relative;" id="format-list-wrapper">
+                                    <button id="btn-format-list" class="toolbar-btn" title="List"><i class="fa-solid fa-list-ul"></i><i class="fa-solid fa-chevron-down" style="font-size:0.6rem; margin-left:0.2rem;"></i></button>
+                                    <div id="format-list-dropdown" class="hidden" style="position: absolute; top: 100%; left: 0; background: #FFF8F0; border: 1px solid rgba(192, 133, 82, 0.4); border-radius: 4px; box-shadow: 0 4px 14px rgba(75, 46, 43, 0.12); z-index: 10; min-width: 200px; padding: 0.5rem 0;">
+                                        <div class="list-dropdown-item" data-cmd="insertUnorderedList">Bullet list <span style="font-size:0.7rem; opacity:0.7; float:right;">Ctrl+Shift+8</span></div>
+                                        <div class="list-dropdown-item" data-cmd="insertOrderedList">Numbered list <span style="font-size:0.7rem; opacity:0.7; float:right;">Ctrl+Shift+7</span></div>
+                                    </div>
+                                </div>
+                                <div class="toolbar-spacer"></div>
+                                <label class="toolbar-btn" title="Attach file" for="comment-file-input">
+                                    <i class="fa-solid fa-paperclip"></i>
+                                </label>
+                                <input type="file" id="comment-file-input" style="display:none;" accept="image/*, .pdf, .doc, .docx" multiple>
+                            </div>
+                            <div id="modal-comment-input" class="comment-textarea" contenteditable="true" data-placeholder="Write a comment..."></div>
+                            
+                            <!-- Attachment Preview -->
+                            <div id="comment-attachments-container" class="comment-attachments-container hidden">
+                                <!-- Chips will be injected here -->
+                            </div>
+                            
+                            <div class="comment-actions">
+                                <button id="modal-save-comment-btn" class="btn-primary">Save</button>
+                                <label class="watch-checkbox">
+                                    <input type="checkbox"> Watch
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="modal-comments-list" class="modal-comments-list">
+                        <!-- Rendered comments will go here -->
+                    </div>
+                </div>
+            </div>
+            <!-- Move Card Popover (Nested inside modal-content for positioning) -->
+            <div id="move-card-popover" class="popover hidden">
+                <div class="popover-header">
+                    <span>Move Card</span>
+                    <button id="move-popover-close"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="popover-content">
+                    <div class="popover-field">
+                        <label>Pilih Daftar (List)</label>
+                        <select id="move-list-select" class="popover-select"></select>
+                    </div>
+                    <div class="popover-field">
+                        <label>Posisi</label>
+                        <select id="move-pos-select" class="popover-select"></select>
+                    </div>
+                    <button id="move-execute-btn" class="btn-primary" style="width:100%; margin-top:0.8rem;">Pindahkan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attachment Preview Modal -->
+    <div id="attachment-preview-modal" class="modal-overlay hidden" style="z-index: 10000; align-items: center; justify-content: center; background: rgba(0,0,0,0.85);">
+        <div class="preview-modal-box" style="background: #FFF8F0; width: 95vw; height: 95vh; max-width: 1600px; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column;">
+            <div class="preview-header" style="background: #4B2E2B; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; color: #fff;">
+                <div style="display: flex; align-items: center; gap: 0.8rem;">
+                    <i class="fa-solid fa-file"></i>
+                    <span id="preview-modal-title" style="font-weight: 600; font-size: 1.1rem; word-break: break-all;">Filename.txt</span>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button id="preview-download-btn" style="background: #C08552; border: none; color: #fff; padding: 0.4rem 1rem; border-radius: 4px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; transition: background 0.1s;"><i class="fa-solid fa-download"></i> Download</button>
+                    <button id="preview-close-btn" style="background: none; border: none; color: #fff; font-size: 1.2rem; cursor: pointer; transition: color 0.1s;"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            </div>
+            <div id="preview-modal-content" style="padding: 1rem; background: rgba(0,0,0,0.02); display: flex; justify-content: center; align-items: center; flex: 1; overflow: hidden;">
+                <!-- Content injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Photo Cropper Modal -->
+    <div id="cropper-modal" class="hidden" style="position:fixed; inset:0; background:rgba(15,15,15,0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index:10000; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+        
+        <!-- Cropper Area Container -->
+        <div style="position:relative; width:100%; height:70vh; display:flex; align-items:center; justify-content:center; overflow:hidden;" id="cropper-container">
+            <!-- The uncropped image -->
+            <img id="cropper-img" style="position:absolute; cursor:grab; transform-origin: top left;" draggable="false">
+            
+            <!-- The circular overlay mask with corner markers -->
+            <div id="cropper-mask" style="position:absolute; cursor:move; box-shadow: 0 0 0 9999px rgba(15,15,15,0.75); border-radius:50%; width: 300px; height: 300px; padding:0; margin:0; border: 1.5px solid rgba(255,255,255,0.6);">
+                <div style="position:absolute; top:-4px; left:-4px; width:6px; height:6px; background:#fff; border-radius:1px;"></div>
+                <div style="position:absolute; top:-4px; right:-4px; width:6px; height:6px; background:#fff; border-radius:1px;"></div>
+                <div style="position:absolute; bottom:-4px; left:-4px; width:6px; height:6px; background:#fff; border-radius:1px;"></div>
+                <div style="position:absolute; bottom:-4px; right:-4px; width:6px; height:6px; background:#fff; border-radius:1px;"></div>
+            </div>
+        </div>
+        
+        <!-- Bottom Toolbar Pill -->
+        <div style="background:#1A1A1A; border: 1px solid rgba(255,255,255,0.08); padding: 0.8rem 1.5rem; border-radius: 12px; display:flex; justify-content:space-between; align-items:center; gap: 2rem; margin-top:2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <button id="cropper-cancel" style="background:none; border:none; color:#C4A882; font-size:0.9rem; font-weight:600; cursor:pointer; font-family:'Inter', sans-serif; padding:0.5rem;">Cancel</button>
+            <!-- Scaling slider -->
+            <div style="display:flex; align-items:center; gap:0.6rem; color:#666;">
+                <i class="fa-solid fa-image" style="font-size:0.8rem;"></i>
+                <input type="range" id="cropper-scale" min="0.1" max="3" step="0.01" value="1" style="width:120px; cursor:ew-resize;">
+                <i class="fa-solid fa-image" style="font-size:1.1rem;"></i>
+            </div>
+            <button id="cropper-confirm" style="background:none; border:none; color:#3498db; font-size:0.9rem; font-weight:600; cursor:pointer; font-family:'Inter', sans-serif; padding:0.5rem;">Set Photo</button>
+        </div>
+    </div>
+
+
+
+    <!-- List Summary Modal -->
+    <div id="list-summary-modal" class="modal-overlay hidden" style="z-index: 10002;">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-topbar">
+                <div class="modal-topbar-left">
+                    <i class="fa-solid fa-rectangle-list"></i>
+                    <span id="summary-list-name" style="font-weight: 600; color: #fff;">List Summary</span>
+                </div>
+                <button id="summary-close-btn" class="modal-close-btn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-inner" style="padding: 1.5rem; overflow-y: auto; max-height: 70vh;">
+                <div id="summary-content" class="summary-content">
+                    <!-- Cards summary will be injected here -->
+                </div>
+            </div>
+            <div style="padding: 1rem; border-top: 1px solid rgba(192,133,82,0.1); display: flex; justify-content: flex-end;">
+                <button id="summary-copy-btn" class="btn-secondary" style="font-size: 0.85rem;"><i class="fa-solid fa-copy"></i> Copy Text</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/script.js"></script>
+</body>
+</html>
+
