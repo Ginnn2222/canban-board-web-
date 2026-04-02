@@ -78,10 +78,21 @@ try {
     $pdo = new TiDB_PDO("mysql:host=$host;port=$port;dbname=$dbname;charset=utf8mb4", $dbuser, $dbpass, $options);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-
-    // 🔥 Activate Database Sessions 🔥
+    
+    // 🔥 Activate Database Sessions (Centralized here) 🔥
     if (session_status() === PHP_SESSION_NONE) {
         session_set_save_handler(new TiDBSessionHandler($pdo), true);
+        
+        // Optimize for Vercel/Serverless
+        session_set_cookie_params([
+            'lifetime' => 0,
+            'path' => '/',
+            'domain' => '',
+            'secure' => true,
+            'httponly' => true,
+            'samesite' => 'Lax'
+        ]);
+        
         session_start();
     }
 } catch (Exception $e) {
