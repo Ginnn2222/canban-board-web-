@@ -21,10 +21,11 @@ try {
         }
     }
 
-    // TiDB Cloud requires SSL connection.
+    // TiDB Cloud requires SSL connection with SNI support.
+    // In PHP PDO, SNI is only sent if MYSQL_ATTR_SSL_VERIFY_SERVER_CERT is set to true!
     $options = [
         1002 => 'SET NAMES utf8mb4', // MYSQL_ATTR_INIT_COMMAND
-        1014 => false,               // MYSQL_ATTR_SSL_VERIFY_SERVER_CERT 
+        1014 => true,                // MYSQL_ATTR_SSL_VERIFY_SERVER_CERT (Must be true for SNI)
     ];
     if ($ca_path) {
         $options[1010] = $ca_path;   // MYSQL_ATTR_SSL_CA
