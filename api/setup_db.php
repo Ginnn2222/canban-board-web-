@@ -2,10 +2,10 @@
 // Run this file ONCE to create the database and all tables.
 // Visit: http://localhost/projek1/api/setup_db.php
 
-$host   = getenv('DB_HOST') ?: 'localhost';
-$dbuser = getenv('DB_USER') ?: 'root';
-$dbpass = getenv('DB_PASS') ?: '';
-$dbname = getenv('DB_NAME') ?: 'tralala_db';
+$host   = $_ENV['DB_HOST']   ?? (getenv('DB_HOST')   ?: ($_SERVER['DB_HOST']   ?? 'localhost'));
+$dbuser = $_ENV['DB_USER']   ?? (getenv('DB_USER')   ?: ($_SERVER['DB_USER']   ?? 'root'));
+$dbpass = $_ENV['DB_PASS']   ?? (getenv('DB_PASS')   ?: ($_SERVER['DB_PASS']   ?? ''));
+$dbname = $_ENV['DB_NAME']   ?? (getenv('DB_NAME')   ?: ($_SERVER['DB_NAME']   ?? 'tralala_db'));
 
 try {
     // TiDB Cloud requires SSL connection.

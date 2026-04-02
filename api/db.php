@@ -1,16 +1,15 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) session_start();
 
-$host   = getenv('DB_HOST') ?: 'localhost';
-$dbname = getenv('DB_NAME') ?: 'tralala_db';
-$dbuser = getenv('DB_USER') ?: 'root';
-$dbpass = getenv('DB_PASS') ?: 'root';
+$host   = $_ENV['DB_HOST']   ?? (getenv('DB_HOST')   ?: ($_SERVER['DB_HOST']   ?? 'localhost'));
+$dbname = $_ENV['DB_NAME']   ?? (getenv('DB_NAME')   ?: ($_SERVER['DB_NAME']   ?? 'tralala_db'));
+$dbuser = $_ENV['DB_USER']   ?? (getenv('DB_USER')   ?: ($_SERVER['DB_USER']   ?? 'root'));
+$dbpass = $_ENV['DB_PASS']   ?? (getenv('DB_PASS')   ?: ($_SERVER['DB_PASS']   ?? 'root'));
 
 try {
     // TiDB Cloud requires SSL connection.
     $options = [
         PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4',
-        PDO::MYSQL_ATTR_SSL_MIN_PROTOCOL_VERSION => 3,
         // On Vercel, we can usually omit SSL_CA if the server has system CAs, 
         // but we'll enable SSL to ensure it works.
         PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false, 
