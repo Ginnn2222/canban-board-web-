@@ -9,10 +9,9 @@ $dbpass = $_ENV['DB_PASS']   ?? (getenv('DB_PASS')   ?: ($_SERVER['DB_PASS']   ?
 try {
     // TiDB Cloud requires SSL connection.
     $options = [
-        PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4',
-        // On Vercel, we can usually omit SSL_CA if the server has system CAs, 
-        // but we'll enable SSL to ensure it works.
-        PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false, 
+        1002 => 'SET NAMES utf8mb4', // MYSQL_ATTR_INIT_COMMAND
+        1010 => '',                  // MYSQL_ATTR_SSL_CA (Forces SSL)
+        1014 => false,               // MYSQL_ATTR_SSL_VERIFY_SERVER_CERT 
     ];
     
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $dbuser, $dbpass, $options);

@@ -10,8 +10,9 @@ $dbname = $_ENV['DB_NAME']   ?? (getenv('DB_NAME')   ?: ($_SERVER['DB_NAME']   ?
 try {
     // TiDB Cloud requires SSL connection.
     $options = [
-        PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4',
-        PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false, 
+        1002 => 'SET NAMES utf8mb4', // MYSQL_ATTR_INIT_COMMAND
+        1010 => '',                  // MYSQL_ATTR_SSL_CA (Forces SSL)
+        1014 => false,               // MYSQL_ATTR_SSL_VERIFY_SERVER_CERT
     ];
 
     // Connect without specifying a database first
