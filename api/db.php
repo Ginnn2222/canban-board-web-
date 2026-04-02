@@ -7,9 +7,16 @@ $dbuser = getenv('DB_USER') ?: 'root';
 $dbpass = getenv('DB_PASS') ?: 'root';
 
 try {
-    // If we're on Vercel, MySQL might need SSL for certain providers (like TiDB/Aiven)
-    // But for now, we'll keep it standard and let the user add options if needed.
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $dbuser, $dbpass);
+    // TiDB Cloud requires SSL connection.
+    $options = [
+        PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4',
+        PDO::MYSQL_ATTR_SSL_MIN_PROTOCOL_VERSION => 3,
+        // On Vercel, we can usually omit SSL_CA if the server has system CAs, 
+        // but we'll enable SSL to ensure it works.
+        PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false, 
+    ];
+    
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $dbuser, $dbpass, $options);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
