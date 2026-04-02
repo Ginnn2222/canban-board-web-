@@ -31,8 +31,16 @@ try {
         $options[1010] = $ca_path; // MYSQL_ATTR_SSL_CA
     }
 
+    // Extract port if provided, otherwise default to 4000 for TiDB Cloud Serverless
+    $port = 4000;
+    if (strpos($host, ':') !== false) {
+        $parts = explode(':', $host);
+        $host = $parts[0];
+        $port = $parts[1];
+    }
+
     // Connect without specifying a database first
-    $pdo = new PDO("mysql:host=$host;charset=utf8mb4", $dbuser, $dbpass, $options);
+    $pdo = new PDO("mysql:host=$host;port=$port;charset=utf8mb4", $dbuser, $dbpass, $options);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     // Create database
