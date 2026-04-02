@@ -11,7 +11,7 @@ try {
     // TiDB Cloud requires SSL connection.
     $options = [
         1002 => 'SET NAMES utf8mb4', // MYSQL_ATTR_INIT_COMMAND
-        1010 => '',                  // MYSQL_ATTR_SSL_CA (Forces SSL)
+        1010 => '/etc/pki/tls/certs/ca-bundle.crt', // Forces SSL using Vercel system CA
         1014 => false,               // MYSQL_ATTR_SSL_VERIFY_SERVER_CERT
     ];
 
