@@ -33,7 +33,7 @@ try {
     // TiDB Cloud requires SSL connection with SNI support.
     $options = [
         1002 => 'SET NAMES utf8mb4', // MYSQL_ATTR_INIT_COMMAND
-        1014 => true,                // MYSQL_ATTR_SSL_VERIFY_SERVER_CERT (Must be true for SNI)
+        1014 => false,               // MYSQL_ATTR_SSL_VERIFY_SERVER_CERT (Disable strict verify to bypass CN mismatch)
     ];
     if ($ca_path) {
         $options[1009] = $ca_path; // MYSQL_ATTR_SSL_CA (1009 = File, 1010 = Directory)

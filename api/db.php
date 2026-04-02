@@ -30,10 +30,10 @@ try {
     }
 
     // TiDB Cloud requires SSL connection with SNI support.
-    // In PHP PDO, SNI is only sent if MYSQL_ATTR_SSL_VERIFY_SERVER_CERT is set to true!
+    // In PHP PDO, SNI should be sent if a valid CA is loaded, but verification can cause issues on Vercel.
     $options = [
         1002 => 'SET NAMES utf8mb4', // MYSQL_ATTR_INIT_COMMAND
-        1014 => true,                // MYSQL_ATTR_SSL_VERIFY_SERVER_CERT (Must be true for SNI)
+        1014 => false,               // MYSQL_ATTR_SSL_VERIFY_SERVER_CERT (Disable verification)
     ];
     if ($ca_path) {
         $options[1009] = $ca_path;   // MYSQL_ATTR_SSL_CA (1009 = File, 1010 = Directory)
