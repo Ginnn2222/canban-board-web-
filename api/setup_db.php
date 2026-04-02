@@ -8,12 +8,28 @@ $dbpass = $_ENV['DB_PASS']   ?? (getenv('DB_PASS')   ?: ($_SERVER['DB_PASS']   ?
 $dbname = $_ENV['DB_NAME']   ?? (getenv('DB_NAME')   ?: ($_SERVER['DB_NAME']   ?? 'tralala_db'));
 
 try {
+    $ca_path = '';
+    $ca_paths = [
+        __DIR__ . '/ca-bundle.crt',
+        '/etc/pki/tls/certs/ca-bundle.crt',
+        '/etc/ssl/certs/ca-certificates.crt',
+        '/etc/ssl/ca-bundle.pem'
+    ];
+    foreach($ca_paths as $path) {
+        if (file_exists($path)) {
+            $ca_path = $path;
+            break;
+        }
+    }
+
     // TiDB Cloud requires SSL connection.
     $options = [
         1002 => 'SET NAMES utf8mb4', // MYSQL_ATTR_INIT_COMMAND
-        1010 => __DIR__ . '/ca-bundle.crt', // Portably using local CA certificate
         1014 => false,               // MYSQL_ATTR_SSL_VERIFY_SERVER_CERT
     ];
+    if ($ca_path) {
+        $options[1010] = $ca_path; // MYSQL_ATTR_SSL_CA
+    }
 
     // Connect without specifying a database first
     $pdo = new PDO("mysql:host=$host;charset=utf8mb4", $dbuser, $dbpass, $options);
