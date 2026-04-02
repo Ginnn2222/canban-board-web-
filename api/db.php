@@ -28,7 +28,7 @@ try {
         1014 => true,                // MYSQL_ATTR_SSL_VERIFY_SERVER_CERT (Must be true for SNI)
     ];
     if ($ca_path) {
-        $options[1010] = $ca_path;   // MYSQL_ATTR_SSL_CA
+        $options[1009] = $ca_path;   // MYSQL_ATTR_SSL_CA (1009 = File, 1010 = Directory)
     }
     // Extract port if provided, otherwise default to 4000 for TiDB Cloud Serverless
     $port = 4000;
