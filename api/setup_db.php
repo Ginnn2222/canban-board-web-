@@ -2,14 +2,20 @@
 // Run this file ONCE to create the database and all tables.
 // Visit: http://localhost/projek1/api/setup_db.php
 
-$host   = 'localhost';
-$dbuser = 'root';
-$dbpass = '';
-$dbname = 'tralala_db';
+$host   = getenv('DB_HOST') ?: 'localhost';
+$dbuser = getenv('DB_USER') ?: 'root';
+$dbpass = getenv('DB_PASS') ?: '';
+$dbname = getenv('DB_NAME') ?: 'tralala_db';
 
 try {
+    // TiDB Cloud requires SSL connection.
+    $options = [
+        PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4',
+        PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false, 
+    ];
+
     // Connect without specifying a database first
-    $pdo = new PDO("mysql:host=$host;charset=utf8mb4", $dbuser, $dbpass);
+    $pdo = new PDO("mysql:host=$host;charset=utf8mb4", $dbuser, $dbpass, $options);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     // Create database
