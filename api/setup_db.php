@@ -7,6 +7,14 @@ $dbuser = $_ENV['DB_USER']   ?? (getenv('DB_USER')   ?: ($_SERVER['DB_USER']   ?
 $dbpass = $_ENV['DB_PASS']   ?? (getenv('DB_PASS')   ?: ($_SERVER['DB_PASS']   ?? ''));
 $dbname = $_ENV['DB_NAME']   ?? (getenv('DB_NAME')   ?: ($_SERVER['DB_NAME']   ?? 'tralala_db'));
 
+// DEBUGGING CRITICAL CHECK
+if ($host === 'localhost' || empty($host)) {
+    die("<h2 style='color:red'>🛑 ERROR CRITICAL: VARIABEL DB_HOST KOSONG ATAU LOCALHOST!</h2>
+         <p>Vercel TIDAK BISA membaca Environment Variables Anda. Pastikan Anda mencentang target 'Production' saat memasukkan variabel di Vercel Dashboard, dan pastikan Anda melakukan <b>Redeploy</b> setelah menambahkan variabel.</p>
+         <hr>
+         <p>Info Debug: Host yang terbaca saat ini adalah: <b>" . htmlspecialchars($host) . "</b></p>");
+}
+
 try {
     $ca_path = '';
     $ca_paths = [

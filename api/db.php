@@ -6,6 +6,14 @@ $dbname = $_ENV['DB_NAME']   ?? (getenv('DB_NAME')   ?: ($_SERVER['DB_NAME']   ?
 $dbuser = $_ENV['DB_USER']   ?? (getenv('DB_USER')   ?: ($_SERVER['DB_USER']   ?? 'root'));
 $dbpass = $_ENV['DB_PASS']   ?? (getenv('DB_PASS')   ?: ($_SERVER['DB_PASS']   ?? 'root'));
 
+// DEBUGGING CRITICAL CHECK
+if ($host === 'localhost' || empty($host)) {
+    header('Content-Type: application/json');
+    http_response_code(500);
+    echo json_encode(['ok' => false, 'message' => '🛑 ERROR: Vercel Environment Variables (DB_HOST) are missing or localhost!']);
+    exit;
+}
+
 try {
     $ca_path = '';
     $ca_paths = [
