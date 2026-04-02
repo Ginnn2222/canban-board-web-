@@ -6,7 +6,9 @@ require_auth();
 
 $input  = get_input();
 $action = $input['action'] ?? '';
-$userId = (int)$_SESSION['user_id'];
+
+// 🔥 Shared Board: Everyone interacts with the same Board ID 🔥
+$userId = GLOBAL_BOARD_USER_ID;
 
 // ── Helper: save file from base64 data URL ────────────────
 function save_attachment($userId, $base64DataUrl, $name) {

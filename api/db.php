@@ -1,4 +1,6 @@
 <?php
+// Shared Board Configuration
+define('GLOBAL_BOARD_USER_ID', 1);
 
 $host   = $_ENV['DB_HOST']   ?? (getenv('DB_HOST')   ?: ($_SERVER['DB_HOST']   ?? 'localhost'));
 $dbname = $_ENV['DB_NAME']   ?? (getenv('DB_NAME')   ?: ($_SERVER['DB_NAME']   ?? 'tralala_db'));
@@ -20,10 +22,14 @@ class TiDBSessionHandler implements SessionHandlerInterface {
     public function open($savePath, $sessionName): bool { return true; }
     public function close(): bool { return true; }
     public function read($id): string {
-        $stmt = $this->pdo->prepare("SELECT data FROM sessions WHERE id = ?");
-        $stmt->execute([$id]);
-        $rows = $stmt->fetchAll();
-        return $rows[0]['data'] ?? '';
+        try {
+            $stmt = $this->pdo->prepare("SELECT data FROM sessions WHERE id = ?");
+            $stmt->execute([$id]);
+            $rows = $stmt->fetchAll();
+            return (isset($rows[0]['data']) && !empty($rows[0]['data'])) ? $rows[0]['data'] : '';
+        } catch (Exception $e) {
+            return '';
+        }
     }
     public function write($id, $data): bool {
         $stmt = $this->pdo->prepare("REPLACE INTO sessions (id, data, last_updated) VALUES (?, ?, ?)");
@@ -38,7 +44,7 @@ class TiDBSessionHandler implements SessionHandlerInterface {
             $stmt = $this->pdo->prepare("DELETE FROM sessions WHERE last_updated < ?");
             $stmt->execute([time() - $maxlifetime]);
         } catch (Exception $e) {}
-        return 1;
+        return 1; // Success
     }
 }
 

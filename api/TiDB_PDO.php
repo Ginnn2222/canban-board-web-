@@ -10,22 +10,31 @@ class TiDB_Statement {
         $this->mysqli_stmt = $mysqli_stmt;
     }
 
-    public function execute($params = null) {
-        // PHP 8.1+ supports passing parameters array directly to execute()
+    public function execute($params = null): bool {
+        // Clear previous results
+        $this->result = null;
+        
         if ($params !== null && !empty($params)) {
-            // PDO execute uses 0-indexed arrays usually, or associative.
-            // mysqli_stmt::execute expects list of values.
             $values = array_values($params);
-            if (!$this->mysqli_stmt->execute($values)) {
-                throw new Exception($this->mysqli_stmt->error);
+            // mysqli_stmt::execute([$v1, $v2]) is PHP 8.1+
+            if (method_exists($this->mysqli_stmt, 'execute') && PHP_VERSION_ID >= 80100) {
+                if (!$this->mysqli_stmt->execute($values)) {
+                    throw new Exception("TiDB Execute failed: " . $this->mysqli_stmt->error);
+                }
+            } else {
+                // Fallback for PHP < 8.1 (Older environments)
+                $types = str_repeat('s', count($values)); // Bind all as strings for safety
+                $this->mysqli_stmt->bind_param($types, ...$values);
+                if (!$this->mysqli_stmt->execute()) {
+                    throw new Exception("TiDB Execute legacy failed: " . $this->mysqli_stmt->error);
+                }
             }
         } else {
             if (!$this->mysqli_stmt->execute()) {
-                throw new Exception($this->mysqli_stmt->error);
+                throw new Exception("TiDB Execute failed: " . $this->mysqli_stmt->error);
             }
         }
         
-        // get_result only works for SELECT queries, for others it returns false cleanly
         $this->result = $this->mysqli_stmt->get_result();
         return true;
     }
