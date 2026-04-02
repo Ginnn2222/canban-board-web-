@@ -1,5 +1,4 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) session_start();
 
 $host   = $_ENV['DB_HOST']   ?? (getenv('DB_HOST')   ?: ($_SERVER['DB_HOST']   ?? 'localhost'));
 $dbname = $_ENV['DB_NAME']   ?? (getenv('DB_NAME')   ?: ($_SERVER['DB_NAME']   ?? 'tralala_db'));
@@ -12,6 +11,35 @@ if ($host === 'localhost' || empty($host)) {
     http_response_code(500);
     echo json_encode(['ok' => false, 'message' => '🛑 ERROR: Vercel Environment Variables (DB_HOST) are missing or localhost!']);
     exit;
+}
+
+// Custom Database Session Handler for Vercel
+class TiDBSessionHandler implements SessionHandlerInterface {
+    private $pdo;
+    public function __construct($pdo) { $this->pdo = $pdo; }
+    public function open($savePath, $sessionName): bool { return true; }
+    public function close(): bool { return true; }
+    public function read($id): string {
+        $stmt = $this->pdo->prepare("SELECT data FROM sessions WHERE id = ?");
+        $stmt->execute([$id]);
+        $rows = $stmt->fetchAll();
+        return $rows[0]['data'] ?? '';
+    }
+    public function write($id, $data): bool {
+        $stmt = $this->pdo->prepare("REPLACE INTO sessions (id, data, last_updated) VALUES (?, ?, ?)");
+        return (bool)$stmt->execute([$id, $data, time()]);
+    }
+    public function destroy($id): bool {
+        $stmt = $this->pdo->prepare("DELETE FROM sessions WHERE id = ?");
+        return (bool)$stmt->execute([$id]);
+    }
+    public function gc($maxlifetime): int {
+        try {
+            $stmt = $this->pdo->prepare("DELETE FROM sessions WHERE last_updated < ?");
+            $stmt->execute([time() - $maxlifetime]);
+        } catch (Exception $e) {}
+        return 1;
+    }
 }
 
 try {
@@ -50,6 +78,12 @@ try {
     $pdo = new TiDB_PDO("mysql:host=$host;port=$port;dbname=$dbname;charset=utf8mb4", $dbuser, $dbpass, $options);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+
+    // 🔥 Activate Database Sessions 🔥
+    if (session_status() === PHP_SESSION_NONE) {
+        session_set_save_handler(new TiDBSessionHandler($pdo), true);
+        session_start();
+    }
 } catch (Exception $e) {
     header('Content-Type: application/json');
     http_response_code(500);

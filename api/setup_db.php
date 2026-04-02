@@ -119,10 +119,17 @@ try {
         FOREIGN KEY (`comment_id`) REFERENCES `comments`(`id`) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
+    // Sessions table (for Vercel serverless persistence)
+    $pdo->exec("CREATE TABLE IF NOT EXISTS `sessions` (
+        `id`           VARCHAR(128) NOT NULL PRIMARY KEY,
+        `data`         MEDIUMTEXT NOT NULL,
+        `last_updated` INT NOT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
     echo '<h2 style="font-family:sans-serif;color:green;">✅ Database setup berhasil!</h2>';
     echo '<p style="font-family:sans-serif">Database <strong>tralala_db</strong> dan semua tabel sudah dibuat.</p>';
-    echo '<p style="font-family:sans-serif">Tabel yang dibuat: <code>users, lists, cards, labels, comments, attachments</code></p>';
-    echo '<p style="font-family:sans-serif"><a href="../index.html">→ Kembali ke app</a></p>';
+    echo '<p style="font-family:sans-serif">Tabel yang dibuat: <code>users, lists, cards, labels, comments, attachments, sessions</code></p>';
+    echo '<p style="font-family:sans-serif"><a href="../index.html" style="display:inline-block;padding:10px 20px;background:#27ae60;color:white;text-decoration:none;border-radius:5px;margin-top:10px;">→ Kembali ke app</a></p>';
 
 } catch (PDOException $e) {
     echo '<h2 style="font-family:sans-serif;color:red;">❌ Setup gagal</h2>';
