@@ -47,8 +47,9 @@ function fetch_board($pdo, $userId) {
 
     $cardIds = array_column($cards, 'id');
 
-    $labelsByCard   = [];
-    $commentsByCard = [];
+    $labelsByCard    = [];
+    $commentCounts   = [];
+    $attachmentCounts = [];
 
     if (!empty($cardIds)) {
         $inCard = implode(',', array_fill(0, count($cardIds), '?'));
@@ -60,43 +61,18 @@ function fetch_board($pdo, $userId) {
             $labelsByCard[$l['card_id']][] = ['id' => $l['id'], 'name' => $l['name'], 'color' => $l['color']];
         }
 
-        // Comments
-        $cStmt = $pdo->prepare("SELECT id, card_id, user_id, author_name, body, timestamp FROM comments WHERE card_id IN ($inCard) ORDER BY timestamp DESC");
-        $cStmt->execute($cardIds);
-        $allComments = $cStmt->fetchAll();
-
-        $commentIds = array_column($allComments, 'id');
-        $attsByComment = [];
-
-        if (!empty($commentIds)) {
-            $inCmt  = implode(',', array_fill(0, count($commentIds), '?'));
-            $aStmt  = $pdo->prepare("SELECT id, comment_id, name, file_path, is_image FROM attachments WHERE comment_id IN ($inCmt)");
-            $aStmt->execute($commentIds);
-            foreach ($aStmt->fetchAll() as $a) {
-                $attsByComment[$a['comment_id']][] = $a;
-            }
+        // Comment Counts
+        $cCountStmt = $pdo->prepare("SELECT card_id, COUNT(*) as cnt FROM comments WHERE card_id IN ($inCard) GROUP BY card_id");
+        $cCountStmt->execute($cardIds);
+        foreach ($cCountStmt->fetchAll() as $row) {
+            $commentCounts[$row['card_id']] = (int)$row['cnt'];
         }
 
-        $userPhoto = $_SESSION['photo'] ?? null;
-        foreach ($allComments as $c) {
-            $atts = [];
-            foreach ($attsByComment[$c['id']] ?? [] as $a) {
-                $atts[] = [
-                    'id'      => (int)$a['id'],
-                    'name'    => $a['name'],
-                    'data'    => att_url($_SESSION['user_id'], $a['file_path']),
-                    'isImage' => (bool)$a['is_image'],
-                ];
-            }
-            $commentsByCard[$c['card_id']][] = [
-                'id'          => $c['id'],
-                'user_id'     => (int)$c['user_id'],
-                'authorName'  => $c['author_name'],
-                'authorPhoto' => $userPhoto,
-                'text'        => $c['body'],
-                'attachments' => $atts,
-                'timestamp'   => (int)$c['timestamp'],
-            ];
+        // Attachment Counts (via Comments)
+        $aCountStmt = $pdo->prepare("SELECT c.card_id, COUNT(a.id) as cnt FROM attachments a JOIN comments c ON a.comment_id = c.id WHERE c.card_id IN ($inCard) GROUP BY c.card_id");
+        $aCountStmt->execute($cardIds);
+        foreach ($aCountStmt->fetchAll() as $row) {
+            $attachmentCounts[$row['card_id']] = (int)$row['cnt'];
         }
     }
 
@@ -104,11 +80,12 @@ function fetch_board($pdo, $userId) {
     $cardsByList = [];
     foreach ($cards as $c) {
         $cardsByList[$c['list_id']][] = [
-            'id'          => $c['id'],
-            'text'        => $c['text'],
-            'description' => $c['description'] ?? '',
-            'labels'      => $labelsByCard[$c['id']] ?? [],
-            'comments'    => $commentsByCard[$c['id']] ?? [],
+            'id'               => $c['id'],
+            'text'             => $c['text'],
+            'description'      => $c['description'] ?? '',
+            'labels'           => $labelsByCard[$c['id']] ?? [],
+            'comment_count'    => $commentCounts[$c['id']] ?? 0,
+            'attachment_count' => $attachmentCounts[$c['id']] ?? 0,
         ];
     }
 
@@ -129,6 +106,50 @@ switch ($action) {
     // ── Get full board ────────────────────────────────────
     case 'get_board':
         json_ok(fetch_board($pdo, $userId));
+        break;
+
+    // ── Get card details (Lazy Loading) ───────────────────
+    case 'get_card_details':
+        $cardId = $input['card_id'];
+        
+        $cStmt = $pdo->prepare("SELECT id, card_id, user_id, author_name, body, timestamp FROM comments WHERE card_id = ? ORDER BY timestamp DESC");
+        $cStmt->execute([$cardId]);
+        $comments = $cStmt->fetchAll();
+        
+        $commentIds = array_column($comments, 'id');
+        $attsByComment = [];
+        if (!empty($commentIds)) {
+            $inCmt = implode(',', array_fill(0, count($commentIds), '?'));
+            $aStmt = $pdo->prepare("SELECT id, comment_id, name, file_path, is_image FROM attachments WHERE comment_id IN ($inCmt)");
+            $aStmt->execute($commentIds);
+            foreach ($aStmt->fetchAll() as $a) {
+                $attsByComment[$a['comment_id']][] = $a;
+            }
+        }
+        
+        $userPhoto = $_SESSION['photo'] ?? null;
+        $formattedComments = [];
+        foreach ($comments as $c) {
+            $atts = [];
+            foreach ($attsByComment[$c['id']] ?? [] as $a) {
+                $atts[] = [
+                    'id'      => (int)$a['id'],
+                    'name'    => $a['name'],
+                    'data'    => att_url($_SESSION['user_id'] ?? 1, $a['file_path']),
+                    'isImage' => (bool)$a['is_image'],
+                ];
+            }
+            $formattedComments[] = [
+                'id'          => $c['id'],
+                'user_id'     => (int)$c['user_id'],
+                'authorName'  => $c['author_name'],
+                'authorPhoto' => $userPhoto,
+                'text'        => $c['body'],
+                'attachments' => $atts,
+                'timestamp'   => (int)$c['timestamp'],
+            ];
+        }
+        json_ok(['comments' => $formattedComments]);
         break;
 
     // ── Add list ──────────────────────────────────────────

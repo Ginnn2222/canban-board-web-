@@ -115,6 +115,18 @@ try {
         $pdo->exec("ALTER TABLE `comments` ADD COLUMN `user_id` INT DEFAULT NULL AFTER `card_id` ");
     } catch (Exception $e) { /* Already exists */ }
 
+    // Optimization: Add indexes for foreign keys
+    $indexes = [
+        "CREATE INDEX idx_cards_list ON cards(list_id)",
+        "CREATE INDEX idx_labels_card ON labels(card_id)",
+        "CREATE INDEX idx_comments_card ON comments(card_id)",
+        "CREATE INDEX idx_attachments_comment ON attachments(comment_id)",
+        "CREATE INDEX idx_sessions_updated ON sessions(last_updated)"
+    ];
+    foreach ($indexes as $sql) {
+        try { $pdo->exec($sql); } catch (Exception $e) {}
+    }
+
     // Attachments table
     $pdo->exec("CREATE TABLE IF NOT EXISTS `attachments` (
         `id`         INT AUTO_INCREMENT PRIMARY KEY,

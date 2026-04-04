@@ -141,12 +141,15 @@ function createCardElement(cardData, listId) {
     let badgesHtml = '';
     if (cardData.description && cardData.description.trim())
         badgesHtml += `<div class="card-badge" title="Has description"><i class="fa-solid fa-align-left"></i></div>`;
-    if (cardData.comments && cardData.comments.length > 0) {
-        badgesHtml += `<div class="card-badge" title="${cardData.comments.length} comments"><i class="fa-regular fa-comment"></i> ${cardData.comments.length}</div>`;
-        let totalAtts = 0;
-        cardData.comments.forEach(c => totalAtts += (c.attachments || []).length);
-        if (totalAtts > 0) badgesHtml += `<div class="card-badge" title="${totalAtts} attachments"><i class="fa-solid fa-paperclip"></i> ${totalAtts}</div>`;
+    
+    // 🔥 Use counts from API instead of array length 🔥
+    if (cardData.comment_count > 0) {
+        badgesHtml += `<div class="card-badge" title="${cardData.comment_count} comments"><i class="fa-regular fa-comment"></i> ${cardData.comment_count}</div>`;
     }
+    if (cardData.attachment_count > 0) {
+        badgesHtml += `<div class="card-badge" title="${cardData.attachment_count} attachments"><i class="fa-solid fa-paperclip"></i> ${cardData.attachment_count}</div>`;
+    }
+
     if (badgesHtml) { badgesEl.innerHTML = badgesHtml; badgesEl.classList.remove('hidden'); }
     else badgesEl.classList.add('hidden');
 
@@ -251,8 +254,17 @@ function openModal(listId, cardId) {
     modalListName.style.outline   = 'none';
     modalDescriptionInput.value   = card.description || '';
 
-    renderComments(listId, cardId);
-    renderAttachments(listId, cardId);
+    // 🔥 Lazy Loading: Fetch details only when card is opened 🔥
+    (async () => {
+        try {
+            const data = await apiBoard('get_card_details', { card_id: cardId });
+            card.comments = data.comments || [];
+            renderComments(listId, cardId);
+            renderAttachments(listId, cardId);
+        } catch (e) {
+            console.error("Failed to load card details", e);
+        }
+    })();
 
     const currentUser = getCurrentUser();
     const avatarEl = document.getElementById('comment-author-avatar');
@@ -754,12 +766,14 @@ function updateCardBadgesOnBoard(listId, cardId) {
     const badgesEl = cardEl.querySelector('.card-badges');
     let bHtml = '';
     if (card.description && card.description.trim()) bHtml += `<div class="card-badge"><i class="fa-solid fa-align-left"></i></div>`;
-    if (card.comments && card.comments.length > 0) {
-        bHtml += `<div class="card-badge"><i class="fa-regular fa-comment"></i> ${card.comments.length}</div>`;
-        let totalAtts = 0;
-        card.comments.forEach(c => totalAtts += (c.attachments || []).length);
-        if (totalAtts > 0) bHtml += `<div class="card-badge"><i class="fa-solid fa-paperclip"></i> ${totalAtts}</div>`;
-    }
+    
+    // Use counts or actual data if loaded
+    const cCount = card.comment_count !== undefined ? card.comment_count : (card.comments ? card.comments.length : 0);
+    const aCount = card.attachment_count !== undefined ? card.attachment_count : 0; // Simplified for badges
+
+    if (cCount > 0) bHtml += `<div class="card-badge"><i class="fa-regular fa-comment"></i> ${cCount}</div>`;
+    if (aCount > 0) bHtml += `<div class="card-badge"><i class="fa-solid fa-paperclip"></i> ${aCount}</div>`;
+    
     if (bHtml) { badgesEl.innerHTML = bHtml; badgesEl.classList.remove('hidden'); } else badgesEl.classList.add('hidden');
 }
 
@@ -1174,3 +1188,47 @@ if (heroHowBtn) heroHowBtn.addEventListener('click', scrollToHiw);
 
 const scrollToHiwBtn = document.getElementById('scroll-to-hiw');
 if (scrollToHiwBtn) scrollToHiwBtn.addEventListener('click', scrollToHiw);
+
+// ── Comment Edit/Delete Event Delegation ───────────────────
+document.addEventListener('click', async e => {
+    const editBtn = e.target.closest('.edit-comment-btn');
+    if (editBtn) {
+        const commentId = editBtn.dataset.commentId;
+        const list = boardData.find(l => l.id === currentModalListId);
+        if (!list) return;
+        const card = list.cards.find(c => c.id === currentModalCardId);
+        if (!card) return;
+        const comment = card.comments.find(c => c.id === commentId);
+        if (!comment) return;
+
+        const newText = prompt('Edit komentar Anda:', comment.text);
+        if (newText !== null && newText.trim() !== comment.text) {
+            try {
+                await apiBoard('edit_comment', { id: commentId, text: newText.trim() });
+                comment.text = newText.trim();
+                renderComments(currentModalListId, currentModalCardId);
+                showToast('Komentar diperbarui.');
+            } catch (e) { /* error handled by apiBoard */ }
+        }
+    }
+
+    const deleteBtn = e.target.closest('.delete-comment-btn');
+    if (deleteBtn) {
+        if (!confirm('Hapus komentar ini?')) return;
+        const commentId = deleteBtn.dataset.commentId;
+        try {
+            await apiBoard('delete_comment', { id: commentId });
+            const list = boardData.find(l => l.id === currentModalListId);
+            if (list) {
+                const card = list.cards.find(c => c.id === currentModalCardId);
+                if (card) {
+                    card.comments = card.comments.filter(c => c.id !== commentId);
+                    card.comment_count = Math.max(0, (card.comment_count || 0) - 1);
+                    renderComments(currentModalListId, currentModalCardId);
+                    updateCardBadgesOnBoard(currentModalListId, currentModalCardId);
+                }
+            }
+            showToast('Komentar dihapus.');
+        } catch (e) { /* error handled by apiBoard */ }
+    }
+});
