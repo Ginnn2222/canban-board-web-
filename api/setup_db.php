@@ -103,11 +103,17 @@ try {
     $pdo->exec("CREATE TABLE IF NOT EXISTS `comments` (
         `id`          VARCHAR(30) PRIMARY KEY,
         `card_id`     VARCHAR(20) NOT NULL,
+        `user_id`     INT DEFAULT NULL,
         `author_name` VARCHAR(100) NOT NULL DEFAULT 'User',
         `body`        LONGTEXT DEFAULT NULL,
         `timestamp`   BIGINT NOT NULL,
         FOREIGN KEY (`card_id`) REFERENCES `cards`(`id`) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    // Migration: Add user_id to comments if missing
+    try {
+        $pdo->exec("ALTER TABLE `comments` ADD COLUMN `user_id` INT DEFAULT NULL AFTER `card_id` ");
+    } catch (Exception $e) { /* Already exists */ }
 
     // Attachments table
     $pdo->exec("CREATE TABLE IF NOT EXISTS `attachments` (
