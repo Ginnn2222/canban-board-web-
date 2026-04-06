@@ -260,7 +260,6 @@ body {
     min-height: calc(100vh - 64px);
 }
 
-/* ── List (Column) ──────────────────────────────────────── */
 .list {
     background: rgba(46, 26, 14, 0.95); /* Deeper brown list background */
     backdrop-filter: blur(8px);
@@ -273,7 +272,7 @@ body {
     flex-direction: column;
     box-shadow: var(--shadow-sm);
     transition: box-shadow 0.2s;
-    overflow: hidden; /* Ensure only cards-container scrolls */
+    /* Removed overflow: hidden so dropdowns overflow visibly */
 }
 
 .list:hover {
