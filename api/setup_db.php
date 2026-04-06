@@ -66,8 +66,16 @@ try {
         `photo`       LONGTEXT DEFAULT NULL,
         `photo_pos_x` FLOAT NOT NULL DEFAULT 50,
         `photo_pos_y` FLOAT NOT NULL DEFAULT 50,
+        `last_seen`   TIMESTAMP NULL DEFAULT NULL,
         `created_at`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    // Migration: Add last_seen column if missing (for existing databases)
+    try {
+        $pdo->exec("ALTER TABLE `users` ADD COLUMN `last_seen` TIMESTAMP NULL DEFAULT NULL");
+    } catch (Exception $e) {
+        // Column already exists, ignore
+    }
 
     // Lists table
     $pdo->exec("CREATE TABLE IF NOT EXISTS `lists` (

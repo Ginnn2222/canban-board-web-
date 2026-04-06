@@ -223,6 +223,7 @@ logoutBtn.addEventListener('click', async () => {
     setCurrentUser(null);
     if (typeof boardData !== 'undefined') { boardData = []; }
     if (typeof renderAllLists === 'function') renderAllLists();
+    if (typeof stopPresenceSystem === 'function') stopPresenceSystem();
     applyAuthState(null);
     showLandingOnly();
     userDropdown.classList.add('hidden');

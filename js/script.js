@@ -32,14 +32,20 @@ async function loadBoard() {
         if (boardContainer) boardContainer.classList.remove('hidden');
         document.body.classList.remove('home-view');
         
-        // Render the active users stack to navbar
-        renderActiveUsersStack();
+        // Start online presence system (heartbeat + avatar stack refresh)
+        startPresenceSystem();
     } catch(e) {
         console.error('Failed to load board:', e);
     }
 }
 
-// ── Render Active Users (Board Members Stack) ──
+// ── Render Online Users (Board Members Stack) ──
+const AVATAR_COLORS = ['#0984e3', '#00b894', '#e17055', '#6c5ce7', '#fdcb6e', '#00cec9', '#d63031', '#636e72'];
+
+function getAvatarColor(userId) {
+    return AVATAR_COLORS[userId % AVATAR_COLORS.length];
+}
+
 async function renderActiveUsersStack() {
     const stackContainer = document.getElementById('active-users-stack');
     if (!stackContainer) return;
@@ -49,20 +55,36 @@ async function renderActiveUsersStack() {
         if (res.ok && res.data) {
             stackContainer.innerHTML = '';
             
-            // Limit to max 5 users for the stack UI layout
+            if (res.data.length === 0) {
+                stackContainer.classList.add('hidden');
+                return;
+            }
+            
+            // Show max 5 users visually
             const displayUsers = res.data.slice(0, 5);
-            displayUsers.forEach(u => {
+            displayUsers.forEach((u, i) => {
                 const dv = document.createElement('div');
                 dv.className = 'stack-avatar';
-                dv.title = u.username;
+                dv.title = u.username + ' (online)';
+                dv.style.zIndex = displayUsers.length - i;
+                dv.style.background = getAvatarColor(u.id);
                 
                 if (u.photo) {
                     const img = document.createElement('img');
                     img.src = u.photo;
+                    if (u.photoPos) {
+                        img.style.objectPosition = `${u.photoPos.x}% ${u.photoPos.y}%`;
+                    }
                     dv.appendChild(img);
                 } else {
                     dv.textContent = getInitials(u.username);
                 }
+                
+                // Green online dot
+                const dot = document.createElement('span');
+                dot.className = 'online-dot';
+                dv.appendChild(dot);
+                
                 stackContainer.appendChild(dv);
             });
             
@@ -71,16 +93,45 @@ async function renderActiveUsersStack() {
                 excess.className = 'stack-avatar';
                 excess.style.background = '#eee';
                 excess.style.color = '#333';
+                excess.style.zIndex = 0;
                 excess.textContent = '+' + (res.data.length - 5);
-                excess.title = `${res.data.length - 5} other users`;
+                excess.title = `${res.data.length - 5} lainnya sedang online`;
                 stackContainer.appendChild(excess);
             }
             
             stackContainer.classList.remove('hidden');
         }
     } catch(e) {
-        console.error('Failed to load active users stack:', e);
+        console.error('Failed to load online users stack:', e);
     }
+}
+
+// ── Heartbeat Ping (Online Presence) ──
+let _heartbeatInterval = null;
+let _stackRefreshInterval = null;
+
+function startPresenceSystem() {
+    // Send initial ping immediately
+    authApi({ action: 'ping' }).catch(() => {});
+    
+    // Heartbeat: ping every 60 seconds
+    if (_heartbeatInterval) clearInterval(_heartbeatInterval);
+    _heartbeatInterval = setInterval(() => {
+        authApi({ action: 'ping' }).catch(() => {});
+    }, 60000);
+    
+    // Refresh avatar stack every 15 seconds
+    if (_stackRefreshInterval) clearInterval(_stackRefreshInterval);
+    _stackRefreshInterval = setInterval(() => {
+        renderActiveUsersStack();
+    }, 15000);
+}
+
+function stopPresenceSystem() {
+    if (_heartbeatInterval) { clearInterval(_heartbeatInterval); _heartbeatInterval = null; }
+    if (_stackRefreshInterval) { clearInterval(_stackRefreshInterval); _stackRefreshInterval = null; }
+    const sc = document.getElementById('active-users-stack');
+    if (sc) { sc.innerHTML = ''; sc.classList.add('hidden'); }
 }
 
 // ── Elements ─────────────────────────────────────────────

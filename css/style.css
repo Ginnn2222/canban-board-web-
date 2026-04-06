@@ -267,6 +267,23 @@ body {
     margin-left: 0;
 }
 
+.active-users-stack .online-dot {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 9px;
+    height: 9px;
+    background: #00b894;
+    border-radius: 50%;
+    border: 2px solid #5d4037;
+    animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(0, 184, 148, 0.4); }
+    50% { box-shadow: 0 0 0 4px rgba(0, 184, 148, 0); }
+}
+
 /* Create button */
 .create-btn {
     background: #C08552;

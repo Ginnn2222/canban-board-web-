@@ -101,6 +101,13 @@ try {
         
         session_start();
     }
+    
+    // Auto-migrate: Add last_seen column if not exists
+    try {
+        $pdo->exec("ALTER TABLE `users` ADD COLUMN `last_seen` TIMESTAMP NULL DEFAULT NULL");
+    } catch (Exception $e) {
+        // Column already exists — safe to ignore
+    }
 } catch (Exception $e) {
     header('Content-Type: application/json');
     http_response_code(500);

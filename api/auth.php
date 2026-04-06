@@ -80,6 +80,9 @@ switch ($action) {
         $_SESSION['photo_pos_x'] = (float)$user['photo_pos_x'];
         $_SESSION['photo_pos_y'] = (float)$user['photo_pos_y'];
 
+        // Mark user as online immediately
+        $pdo->prepare("UPDATE users SET last_seen = NOW() WHERE id = ?")->execute([(int)$user['id']]);
+
         json_ok([
             'id'       => (int)$user['id'],
             'username' => $user['username'],
@@ -94,6 +97,8 @@ switch ($action) {
         if (empty($_SESSION['user_id']) || !check_session_timeout()) {
             json_ok(null);
         }
+        // Refresh online presence on session check
+        $pdo->prepare("UPDATE users SET last_seen = NOW() WHERE id = ?")->execute([$_SESSION['user_id']]);
         json_ok([
             'id'       => (int)$_SESSION['user_id'],
             'username' => $_SESSION['username'],
@@ -165,9 +170,19 @@ switch ($action) {
         ]);
         break;
 
-    // ── Get All Users (For Navbar Avatar Stack) ──
+    // ── Ping (Heartbeat for Online Presence) ──
+    case 'ping':
+        if (!empty($_SESSION['user_id'])) {
+            $pdo->prepare("UPDATE users SET last_seen = NOW() WHERE id = ?")->execute([$_SESSION['user_id']]);
+            json_ok(['ts' => time()]);
+        }
+        json_ok(null);
+        break;
+
+    // ── Get Online Users (For Navbar Avatar Stack) ──
     case 'get_all_users':
-        $stmt = $pdo->query("SELECT id, username, photo, photo_pos_x, photo_pos_y FROM users ORDER BY id ASC");
+        // Only return users seen within the last 2 minutes
+        $stmt = $pdo->query("SELECT id, username, photo, photo_pos_x, photo_pos_y FROM users WHERE last_seen >= NOW() - INTERVAL 2 MINUTE ORDER BY last_seen DESC");
         $users = [];
         while ($row = $stmt->fetch()) {
             $users[] = [
