@@ -254,6 +254,12 @@ function openModal(listId, cardId) {
     modalListName.style.outline   = 'none';
     modalDescriptionInput.value   = card.description || '';
 
+    // Reset displays before loading to prevent bleed from previous card
+    const cList = document.getElementById('modal-comments-list');
+    const aListContainer = document.getElementById('modal-attachments-section');
+    if (cList) cList.innerHTML = '<div style="padding:1rem;color:#888;text-align:center;font-size:0.85rem;"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>';
+    if (aListContainer) aListContainer.classList.add('hidden');
+
     // 🔥 Lazy Loading: Fetch details only when card is opened 🔥
     (async () => {
         try {
@@ -263,6 +269,10 @@ function openModal(listId, cardId) {
             renderAttachments(listId, cardId);
         } catch (e) {
             console.error("Failed to load card details", e);
+            if (cList) cList.innerHTML = ''; // Clear spinner on fail
+            card.comments = [];
+            renderComments(listId, cardId);
+            renderAttachments(listId, cardId);
         }
     })();
 
