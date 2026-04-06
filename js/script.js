@@ -254,25 +254,36 @@ function openModal(listId, cardId) {
     modalListName.style.outline   = 'none';
     modalDescriptionInput.value   = card.description || '';
 
-    // Reset displays before loading to prevent bleed from previous card
+    // Optimize Loading: Instantly render known state if available
     const cList = document.getElementById('modal-comments-list');
     const aListContainer = document.getElementById('modal-attachments-section');
-    if (cList) cList.innerHTML = '<div style="padding:1rem;color:#888;text-align:center;font-size:0.85rem;"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>';
-    if (aListContainer) aListContainer.classList.add('hidden');
+    
+    if (card.comments === undefined) {
+        // Only show spinner on very first load
+        if (cList) cList.innerHTML = '<div style="padding:1rem;color:#888;text-align:center;font-size:0.85rem;"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>';
+        if (aListContainer) aListContainer.classList.add('hidden');
+    } else {
+        // Render instantly from memory
+        renderComments(listId, cardId);
+        renderAttachments(listId, cardId);
+    }
 
-    // 🔥 Lazy Loading: Fetch details only when card is opened 🔥
+    // 🔥 Lazy Loading: Silently sync from server 🔥
     (async () => {
         try {
             const data = await apiBoard('get_card_details', { card_id: cardId });
             card.comments = data.comments || [];
+            // Re-render automatically to apply any new background data
             renderComments(listId, cardId);
             renderAttachments(listId, cardId);
         } catch (e) {
             console.error("Failed to load card details", e);
-            if (cList) cList.innerHTML = ''; // Clear spinner on fail
-            card.comments = [];
-            renderComments(listId, cardId);
-            renderAttachments(listId, cardId);
+            if (card.comments === undefined) {
+                if (cList) cList.innerHTML = ''; // Clear spinner on fail
+                card.comments = [];
+                renderComments(listId, cardId);
+                renderAttachments(listId, cardId);
+            }
         }
     })();
 
