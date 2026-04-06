@@ -54,8 +54,15 @@ function switchToLogin() {
     modeRegister.classList.remove('active');
     brandCtaText.textContent = "Don't have an account?";
     authSwitchBtn.textContent = 'Register';
-    loginEmailEl.value = '';
-    loginPasswordEl.value = '';
+    
+    const savedEmail = localStorage.getItem('tralala_remember_email');
+    const savedPass  = localStorage.getItem('tralala_remember_pass');
+    loginEmailEl.value    = savedEmail || '';
+    loginPasswordEl.value = savedPass || '';
+    
+    const loginRememberEl = document.getElementById('login-remember');
+    if (loginRememberEl) loginRememberEl.checked = !!savedEmail;
+    
     loginError.classList.add('hidden');
 }
 
@@ -101,6 +108,15 @@ async function doLogin() {
     try {
         const r = await authApi({ action: 'login', email, password });
         if (!r.ok) { showFieldMsg(loginError, r.message || 'Email atau password salah.'); return; }
+
+        const loginRememberEl = document.getElementById('login-remember');
+        if (loginRememberEl && loginRememberEl.checked) {
+            localStorage.setItem('tralala_remember_email', email);
+            localStorage.setItem('tralala_remember_pass', password);
+        } else {
+            localStorage.removeItem('tralala_remember_email');
+            localStorage.removeItem('tralala_remember_pass');
+        }
 
         setCurrentUser(r.data);
         applyAuthState(r.data);
