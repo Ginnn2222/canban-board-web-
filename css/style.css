@@ -1558,6 +1558,19 @@ body.home-view .header-center { display: none; }
 .nav-dropdown-item:hover { background: rgba(192,133,82,0.15); color: #C08552; }
 .nav-dropdown-item i { font-size: 0.85rem; width: 16px; text-align: center; }
 
+/* -- Popover & Kebab Dropdown Items -- */
+.list-dropdown-item {
+    padding: 0.5rem 1rem;
+    color: #4B2E2B;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.1s;
+}
+
+.list-dropdown-item:hover {
+    background: rgba(192, 133, 82, 0.15);
+}
+
 /* -- Page Transition Animations -- */
 @keyframes pageSlideInDown {
     from { opacity: 0; transform: translateY(-40px); }
