@@ -102,11 +102,17 @@ try {
         session_start();
     }
     
-    // Auto-migrate: Add last_seen column if not exists
+    // Auto-migrate: Add last_seen column if not already present
+    // Use a lightweight check to avoid ALTER TABLE errors on every request
     try {
-        $pdo->exec("ALTER TABLE `users` ADD COLUMN `last_seen` TIMESTAMP NULL DEFAULT NULL");
+        $checkCol = $pdo->prepare("SELECT COUNT(*) as cnt FROM information_schema.columns WHERE table_schema = ? AND table_name = 'users' AND column_name = 'last_seen'");
+        $checkCol->execute([$dbname]);
+        $colExists = $checkCol->fetch();
+        if (!$colExists || (int)$colExists['cnt'] === 0) {
+            $pdo->exec("ALTER TABLE `users` ADD COLUMN `last_seen` TIMESTAMP NULL DEFAULT NULL");
+        }
     } catch (Exception $e) {
-        // Column already exists — safe to ignore
+        // Silently ignore - column may already exist or permissions issue
     }
 } catch (Exception $e) {
     header('Content-Type: application/json');

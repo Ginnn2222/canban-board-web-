@@ -91,6 +91,12 @@ class TiDB_PDO {
         return $this->mysqli->affected_rows;
     }
 
+    public function query($sql) {
+        $stmt = $this->prepare($sql);
+        $stmt->execute();
+        return $stmt;
+    }
+
     public function lastInsertId() {
         return $this->mysqli->insert_id;
     }

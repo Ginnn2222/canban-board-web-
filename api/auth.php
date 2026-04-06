@@ -182,9 +182,10 @@ switch ($action) {
     // ── Get Online Users (For Navbar Avatar Stack) ──
     case 'get_all_users':
         // Only return users seen within the last 2 minutes
-        $stmt = $pdo->query("SELECT id, username, photo, photo_pos_x, photo_pos_y FROM users WHERE last_seen >= NOW() - INTERVAL 2 MINUTE ORDER BY last_seen DESC");
+        $stmt = $pdo->prepare("SELECT id, username, photo, photo_pos_x, photo_pos_y FROM users WHERE last_seen >= NOW() - INTERVAL 2 MINUTE ORDER BY last_seen DESC");
+        $stmt->execute();
         $users = [];
-        while ($row = $stmt->fetch()) {
+        foreach ($stmt->fetchAll() as $row) {
             $users[] = [
                 'id'       => (int)$row['id'],
                 'username' => $row['username'],
