@@ -28,9 +28,9 @@ async function loadBoard() {
     try {
         boardData = await apiBoard('get_board') || [];
         renderAllLists();
-        if (landingPage)    landingPage.classList.remove('hidden');
-        if (boardContainer) boardContainer.classList.add('hidden');
-        document.body.classList.add('home-view');
+        if (landingPage)    landingPage.classList.add('hidden');
+        if (boardContainer) boardContainer.classList.remove('hidden');
+        document.body.classList.remove('home-view');
     } catch(e) {
         console.error('Failed to load board:', e);
     }
