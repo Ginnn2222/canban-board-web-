@@ -248,13 +248,16 @@
             </button>
         </div>
         <div class="header-right">
+            <!-- Active Users Stack (Will be populated via JS) -->
+            <div id="active-users-stack" class="active-users-stack hidden"></div>
+
             <!-- Shown when logged in -->
             <div class="user-profile hidden" id="user-profile-btn">
                 <div class="avatar" id="user-avatar">
                     <img id="user-nav-photo" class="hidden" alt="Profile">
                     <span id="user-nav-initials">U</span>
                 </div>
-                <span id="user-nav-name" class="user-nav-name">User</span>
+                <span id="user-nav-name" class="user-nav-name" style="display: none;">User</span>
                 <div class="user-dropdown hidden" id="user-dropdown">
                     <div class="user-info">
                         <p class="user-name" id="user-display-name">User</p>

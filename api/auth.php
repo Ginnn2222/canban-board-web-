@@ -165,6 +165,24 @@ switch ($action) {
         ]);
         break;
 
+    // ── Get All Users (For Navbar Avatar Stack) ──
+    case 'get_all_users':
+        $stmt = $pdo->query("SELECT id, username, photo, photo_pos_x, photo_pos_y FROM users ORDER BY id ASC");
+        $users = [];
+        while ($row = $stmt->fetch()) {
+            $users[] = [
+                'id'       => (int)$row['id'],
+                'username' => $row['username'],
+                'photo'    => $row['photo'],
+                'photoPos' => [
+                    'x' => (float)($row['photo_pos_x'] ?? 50),
+                    'y' => (float)($row['photo_pos_y'] ?? 50),
+                ]
+            ];
+        }
+        json_ok($users);
+        break;
+
     // ── Update Photo ─────────────────────────────────────
     case 'update_photo':
         require_auth();

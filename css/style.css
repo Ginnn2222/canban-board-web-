@@ -225,6 +225,48 @@ body {
     min-width: 140px;
 }
 
+/* Active Users Avatar Stack */
+.active-users-stack {
+    display: flex;
+    align-items: center;
+    margin-right: 0.5rem;
+}
+
+.active-users-stack .stack-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid #5d4037; /* Match header background */
+    margin-left: -10px;        /* Overlap effect */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    overflow: hidden;
+    position: relative;
+    background: #0984e3;       /* Default fallback color */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    transition: transform 0.2s, z-index 0.2s;
+    cursor: default;
+}
+
+.active-users-stack .stack-avatar:hover {
+    transform: translateY(-2px);
+    z-index: 10 !important;
+}
+
+.active-users-stack .stack-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.active-users-stack .stack-avatar:first-child {
+    margin-left: 0;
+}
+
 /* Create button */
 .create-btn {
     background: #C08552;
@@ -1260,7 +1302,6 @@ body {
     0% { top: 100vh; }
     50% { top: 0; }
     100% { top: -100vh; }
-}
 }
 
 /* Landing Page ΓÇö scrolling */

@@ -31,8 +31,55 @@ async function loadBoard() {
         if (landingPage)    landingPage.classList.add('hidden');
         if (boardContainer) boardContainer.classList.remove('hidden');
         document.body.classList.remove('home-view');
+        
+        // Render the active users stack to navbar
+        renderActiveUsersStack();
     } catch(e) {
         console.error('Failed to load board:', e);
+    }
+}
+
+// ── Render Active Users (Board Members Stack) ──
+async function renderActiveUsersStack() {
+    const stackContainer = document.getElementById('active-users-stack');
+    if (!stackContainer) return;
+    
+    try {
+        const res = await authApi({ action: 'get_all_users' });
+        if (res.ok && res.data) {
+            stackContainer.innerHTML = '';
+            
+            // Limit to max 5 users for the stack UI layout
+            const displayUsers = res.data.slice(0, 5);
+            displayUsers.forEach(u => {
+                const dv = document.createElement('div');
+                dv.className = 'stack-avatar';
+                dv.title = u.username;
+                
+                if (u.photo) {
+                    const img = document.createElement('img');
+                    img.src = u.photo;
+                    dv.appendChild(img);
+                } else {
+                    dv.textContent = getInitials(u.username);
+                }
+                stackContainer.appendChild(dv);
+            });
+            
+            if (res.data.length > 5) {
+                const excess = document.createElement('div');
+                excess.className = 'stack-avatar';
+                excess.style.background = '#eee';
+                excess.style.color = '#333';
+                excess.textContent = '+' + (res.data.length - 5);
+                excess.title = `${res.data.length - 5} other users`;
+                stackContainer.appendChild(excess);
+            }
+            
+            stackContainer.classList.remove('hidden');
+        }
+    } catch(e) {
+        console.error('Failed to load active users stack:', e);
     }
 }
 
